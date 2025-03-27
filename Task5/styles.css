@@ -1,0 +1,30 @@
+@import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap');
+
+body {
+    font-family: 'Roboto', sans-serif;
+    text-align: center;
+    background-color: #f9f9f9;
+    color: #333;
+}
+
+h1 {
+    font-size: 22px;
+    margin: 20px 0;
+}
+
+#boxplot {
+    display: flex;
+    justify-content: center;
+}
+
+/* Tooltip Styling */
+.tooltip {
+    position: absolute;
+    background-color: rgba(0, 0, 0, 0.75);
+    color: white;
+    padding: 8px;
+    border-radius: 4px;
+    font-size: 14px;
+    visibility: hidden;
+    pointer-events: none;
+}
