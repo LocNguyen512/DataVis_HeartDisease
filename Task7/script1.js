@@ -1,13 +1,6 @@
-d3.csv("project_heart_disease.csv").then(function (data) {
-    console.log("Dữ liệu CSV:", data);
 
-    // Chuyển đổi dữ liệu cần thiết
-    data.forEach(d => {
-        d.Age = +d.Age;
-        d["Blood Pressure"] = +d["Blood Pressure"];
-        d["Cholesterol Level"] = +d["Cholesterol Level"];
-        d.BMI = +d.BMI;
-    });
+d3.json("family_heart_disease.json").then(function (data) {
+    console.log("Dữ liệu JSON:", data);
 
     // Nhóm dữ liệu theo Family History
     let groupedData = d3.rollups(
@@ -33,8 +26,7 @@ d3.csv("project_heart_disease.csv").then(function (data) {
 
     const svg = d3.select("svg")
         .attr("width", width)
-        .attr("height", height)
-        .attr("transform", "translate(200, 0)"); // Điều chỉnh vị trí bằng transform
+        .attr("height", height);
 
     // Scale trục X
     const xScale = d3.scaleBand()
@@ -110,6 +102,7 @@ d3.csv("project_heart_disease.csv").then(function (data) {
                 <strong>Total in group:</strong> ${d.total}
             `);
         });
+    
 
     // Thêm trục X
     svg.append("g")
@@ -152,6 +145,7 @@ d3.csv("project_heart_disease.csv").then(function (data) {
         .attr("y", (d, i) => i * 20)
         .attr("width", 15)
         .attr("height", 15)
+        .style("font-weight", "bold")
         .attr("fill", d => color(d));
 
     legend.selectAll("text")
@@ -162,7 +156,9 @@ d3.csv("project_heart_disease.csv").then(function (data) {
         .text(d => `Heart Disease: ${d}`)
         .style("font-weight", "bold")
         .style("font-size", "16px");
-
+        
+    
 }).catch(function(error) {
-    console.error("Lỗi khi tải CSV:", error);
+    console.error("Lỗi khi tải JSON:", error);
 });
+
