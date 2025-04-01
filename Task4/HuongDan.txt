@@ -8,7 +8,7 @@
 
 2. Chạy Tệp HTML Với Live Server:
 
-- Mở thư mục dự án của bạn trong VSCode (chứa các tệp Task3.html, style.css, và project_heart_disease.csv).
+- Mở thư mục dự án của bạn trong VSCode (chứa các tệp Task3.html, style.css, script.js và project_heart_disease.csv).
 
 - Mở Task3.html trong VSCode.
 
