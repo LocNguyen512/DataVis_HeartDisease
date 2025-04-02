@@ -1,6 +1,14 @@
 d3.csv("project_heart_disease.csv").then(function (data) {
     console.log("Dữ liệu CSV:", data);
-    
+
+    // Chuyển đổi dữ liệu cần thiết
+    data.forEach(d => {
+        d.Age = +d.Age;
+        d["Blood Pressure"] = +d["Blood Pressure"];
+        d["Cholesterol Level"] = +d["Cholesterol Level"];
+        d.BMI = +d.BMI;
+    });
+
     // Nhóm dữ liệu theo Family History
     let groupedData = d3.rollups(
         data,
@@ -25,13 +33,20 @@ d3.csv("project_heart_disease.csv").then(function (data) {
 
     const svg = d3.select("svg")
         .attr("width", width)
-        .attr("height", height);
+        .attr("height", height)
+        .attr("transform", "translate(200, 0)"); // Điều chỉnh vị trí bằng transform
 
     // Scale trục X
     const xScale = d3.scaleBand()
         .domain(transformedData.map(d => d["Family History"]))
-        .range([margin.left, width - margin.right + 300])
-        .padding(0.5);
+        .range([margin.left, width - margin.right])
+        .padding(0.2);
+
+    // Scale con cho nhóm cột
+    const subXScale = d3.scaleBand()
+        .domain(["No", "Yes"])
+        .range([0, xScale.bandwidth()])
+        .padding(0.1);
 
     // Scale trục Y
     const yScale = d3.scaleLinear()
@@ -52,64 +67,58 @@ d3.csv("project_heart_disease.csv").then(function (data) {
         .data(transformedData)
         .enter().append("g")
         .attr("class", "bar-group")
-        .attr("transform", d => `translate(${xScale(d["Family History"])} ,0)`);
+        .attr("transform", d => `translate(${xScale(d["Family History"])},0)`);
 
-    // Vẽ cột chồng
-    group.each(function (d) {
-        let yStart = height - margin.bottom;
-        let parent = d3.select(this);
+    // Vẽ cột
+    group.selectAll("rect")
+        .data(d => ["No", "Yes"].map(key => ({
+            key, 
+            value: d[key], 
+            percent: ((d[key] / d.Total) * 100).toFixed(1),
+            total: d.Total
+        })))
+        .enter().append("rect")
+        .attr("x", d => subXScale(d.key))
+        .attr("y", d => yScale(d.value))
+        .attr("height", d => height - margin.bottom - yScale(d.value))
+        .attr("width", subXScale.bandwidth())
+        .attr("fill", d => color(d.key))
+        .attr("class", "bar")
+        .on("mouseover", function(event, d) {
+            tooltip.style("display", "block")
+                .html(`<strong>${d.key === "Yes" ? "Heart Disease" : "No Heart Disease"}</strong><br>
+                    Count: ${d.value}<br>
+                    Percentage: ${d.percent}%`);
+            d3.select(this).style("opacity", 0.7);
+        })
+        .on("mousemove", function(event) {
+            tooltip.style("left", (event.pageX + 10) + "px")
+                .style("top", (event.pageY - 20) + "px");
+        })
+        .on("mouseout", function() {
+            tooltip.style("display", "none");
+            d3.select(this).style("opacity", 1);
+        })
+        .on("click", function(event, d) {
+            d3.selectAll(".bar").classed("selected", false);
+            d3.select(this).classed("selected", true);
 
-        ["No", "Yes"].forEach(key => {
-            let barHeight = height - margin.bottom - yScale(d[key]);
-
-            parent.append("rect")
-                .attr("x", 0)
-                .attr("y", yStart - barHeight)
-                .attr("height", barHeight)
-                .attr("width", xScale.bandwidth())
-                .attr("fill", color(key))
-                .attr("class", "bar")
-                .on("mouseover", function (event) {
-                    tooltip.style("display", "block")
-                        .html(`<strong> Category: </strong>${key === "Yes" ? "Heart Disease" : "No Heart Disease"}<br>
-                            <strong>Family Heart Disease:</strong> ${d["Family History"]}<br>
-                            <strong> Count:</strong> ${d[key]}<br>
-                            <strong> Percentage: </strong> ${((d[key] / d.Total) * 100).toFixed(1)}%`);
-                    d3.select(this).style("opacity", 0.7);
-                })
-                .on("mousemove", function (event) {
-                    tooltip.style("left", (event.pageX + 10) + "px")
-                        .style("top", (event.pageY - 20) + "px");
-                })
-                .on("mouseout", function () {
-                    tooltip.style("display", "none");
-                    d3.select(this).style("opacity", 1);
-                })
-                .on("click", function () {
-                    d3.selectAll(".bar").classed("selected", false);
-                    d3.select(this).classed("selected", true);
-
-                    d3.select("#details-content").html(`
-                        <strong>Heart Disease:</strong> ${key}<br>
-                        <strong>Number of people:</strong> ${d[key]}<br>
-                        <strong>Percentage:</strong> ${((d[key] / d.Total) * 100).toFixed(1)}%<br>
-                        <strong>Total in group:</strong> ${d.Total}
-                    `);
-                });
-            
-            yStart -= barHeight;
+            d3.select("#details-content").html(`
+                <strong>Heart Disease:</strong> ${d.key}<br>
+                <strong>Number of people:</strong> ${d.value}<br>
+                <strong>Percentage:</strong> ${d.percent}%<br>
+                <strong>Total in group:</strong> ${d.total}
+            `);
         });
-    });
 
     // Thêm trục X
     svg.append("g")
-        .attr("class", "axis")
+        .attr("class", "axis") 
         .attr("transform", `translate(0,${height - margin.bottom})`)
         .call(d3.axisBottom(xScale));
 
-    // Thêm trục Y
     svg.append("g")
-        .attr("class", "axis")
+        .attr("class", "axis") 
         .attr("transform", `translate(${margin.left},0)`)
         .call(d3.axisLeft(yScale));
 
@@ -134,7 +143,7 @@ d3.csv("project_heart_disease.csv").then(function (data) {
 
     // Thêm chú thích (Legend)
     const legend = svg.append("g")
-        .attr("transform", `translate(${width - 200}, 0)`);
+        .attr("transform", `translate(${width - 200}, 20)`);
 
     legend.selectAll("rect")
         .data(["No", "Yes"])

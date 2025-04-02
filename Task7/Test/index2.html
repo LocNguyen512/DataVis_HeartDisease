@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Stacked Bar Chart - Heart Disease</title>
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <style>
+        .bar {
+            stroke: white;
+        }
+        .axis-label {
+            font-size: 14px;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <h2>Does Family History Increase the Risk of Heart Disease?</h2>
+    <svg width="600" height="400"></svg>
+
+    <script>
+        d3.csv("project_heart_disease.csv").then(function(data) {
+            console.log("Dữ liệu CSV:", data);
+
+            // Chuyển đổi dữ liệu (lưu ý: có thể cần trim hoặc chuyển đổi kiểu dữ liệu nếu cần)
+            let groupedData = d3.rollups(
+                data,
+                v => ({
+                    "Yes": v.filter(d => d["Heart Disease Status"].trim() === "Yes").length,
+                    "No": v.filter(d => d["Heart Disease Status"].trim() === "No").length
+                }),
+                d => d["Family Heart Disease"].trim()
+            );
+
+            // Chuyển đổi về dạng thuận tiện hơn
+            let transformedData = groupedData.map(d => ({
+                "Family History": d[0],
+                "Yes": d[1]["Yes"],
+                "No": d[1]["No"]
+            }));
+
+            console.log("Dữ liệu đã nhóm:", transformedData);
+
+            // Kích thước biểu đồ
+            const width = 600, height = 400;
+            const margin = { top: 50, right: 30, bottom: 50, left: 70 };
+
+            const svg = d3.select("svg")
+                .attr("width", width)
+                .attr("height", height);
+
+            // Xử lý dữ liệu dạng stack
+            const stack = d3.stack()
+                .keys(["No", "Yes"])(transformedData);
+
+            const xScale = d3.scaleBand()
+                .domain(transformedData.map(d => d["Family History"]))
+                .range([margin.left, width - margin.right])
+                .padding(0.4);
+
+            const yScale = d3.scaleLinear()
+                .domain([0, d3.max(stack, d => d3.max(d, d => d[1]))])
+                .nice()
+                .range([height - margin.bottom, margin.top]);
+
+            const color = d3.scaleOrdinal()
+                .domain(["No", "Yes"])
+                .range(["steelblue", "orange"]);
+
+            // Vẽ nhóm cột stack
+            svg.selectAll("g.layer")
+                .data(stack)
+                .enter().append("g")
+                .attr("class", "layer")
+                .attr("fill", d => color(d.key))
+                .selectAll("rect")
+                .data(d => d)
+                .enter().append("rect")
+                .attr("x", d => xScale(d.data["Family History"]))
+                .attr("y", d => yScale(d[1]))
+                .attr("height", d => yScale(d[0]) - yScale(d[1]))
+                .attr("width", xScale.bandwidth());
+
+            // Thêm trục X
+            svg.append("g")
+                .attr("transform", `translate(0,${height - margin.bottom})`)
+                .call(d3.axisBottom(xScale));
+
+            // Thêm trục Y
+            svg.append("g")
+                .attr("transform", `translate(${margin.left},0)`)
+                .call(d3.axisLeft(yScale));
+
+            // Thêm chú thích
+            const legend = svg.append("g")
+                .attr("transform", `translate(${width - 120}, 20)`);
+
+            legend.selectAll("rect")
+                .data(["No", "Yes"])
+                .enter().append("rect")
+                .attr("x", 0)
+                .attr("y", (d, i) => i * 20)
+                .attr("width", 15)
+                .attr("height", 15)
+                .attr("fill", d => color(d));
+
+            legend.selectAll("text")
+                .data(["No", "Yes"])
+                .enter().append("text")
+                .attr("x", 20)
+                .attr("y", (d, i) => i * 20 + 12)
+                .text(d => `Heart Disease: ${d}`)
+                .style("font-size", "12px");
+        }).catch(function(error) {
+            console.error("Lỗi khi tải CSV:", error);
+        });
+    </script>
+</body>
+</html>

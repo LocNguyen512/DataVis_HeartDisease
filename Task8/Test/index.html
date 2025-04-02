@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Stacked Bar Chart - Cholesterol Levels</title>
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+        }
+        svg {
+            background-color: #f9f9f9;
+            border: 1px solid #ddd;
+        }
+        .tooltip {
+            position: absolute;
+            background-color: white;
+            border: 1px solid #ddd;
+            padding: 5px;
+            font-size: 12px;
+            visibility: hidden;
+        }
+    </style>
+</head>
+<body>
+    <h2>Cholesterol Level Distribution by Gender</h2>
+    <div id="chart"></div>
+    <div class="tooltip" id="tooltip"></div>
+    <script>
+        d3.csv("project_heart_disease.csv").then(function(data) {
+            data = data.filter(d => d.Gender && d.Gender.trim() !== "");
+            data.forEach(d => {
+                d["Cholesterol Level"] = +d["Cholesterol Level"];
+            });
+
+            const categories = ["Healthy", "At risk", "Dangerous"];
+            data.forEach(d => {
+                if (d["Cholesterol Level"] < 200) {
+                    d["Cholesterol Status"] = "Healthy";
+                } else if (d["Cholesterol Level"] < 240) {
+                    d["Cholesterol Status"] = "At risk";
+                } else {
+                    d["Cholesterol Status"] = "Dangerous";
+                }
+            });
+
+            const groupedData = d3.rollup(data, 
+                v => ({
+                    Healthy: v.filter(d => d["Cholesterol Status"] === "Healthy").length,
+                    "At risk": v.filter(d => d["Cholesterol Status"] === "At risk").length,
+                    Dangerous: v.filter(d => d["Cholesterol Status"] === "Dangerous").length
+                }),
+                d => d.Gender
+            );
+            
+            const dataset = Array.from(groupedData, ([key, value]) => ({ gender: key, ...value }));
+            
+            const margin = {top: 30, right: 30, bottom: 50, left: 50},
+                  width = 600 - margin.left - margin.right,
+                  height = 400 - margin.top - margin.bottom;
+
+            const svg = d3.select("#chart")
+                          .append("svg")
+                          .attr("width", width + margin.left + margin.right)
+                          .attr("height", height + margin.top + margin.bottom)
+                          .append("g")
+                          .attr("transform", `translate(${margin.left},${margin.top})`);
+            
+            const xScale = d3.scaleBand()
+                             .domain(dataset.map(d => d.gender))
+                             .range([0, width])
+                             .padding(0.2);
+            
+            const yScale = d3.scaleLinear()
+                             .domain([0, d3.max(dataset, d => d.Healthy + d["At risk"] + d.Dangerous)])
+                             .nice()
+                             .range([height, 0]);
+            
+            const color = d3.scaleOrdinal()
+                            .domain(categories)
+                            .range(["#4CAF50", "#FFC107", "#F44336"]);
+            
+            const stack = d3.stack()
+                            .keys(categories)
+                            .order(d3.stackOrderNone)
+                            .offset(d3.stackOffsetNone);
+            
+            const stackedData = stack(dataset);
+            const tooltip = d3.select("#tooltip");
+            
+            svg.append("g")
+               .selectAll("g")
+               .data(stackedData)
+               .enter().append("g")
+               .attr("fill", d => color(d.key))
+               .selectAll("rect")
+               .data(d => d)
+               .enter().append("rect")
+               .attr("x", d => xScale(d.data.gender))
+               .attr("y", d => yScale(d[1]))
+               .attr("height", d => yScale(d[0]) - yScale(d[1]))
+               .attr("width", xScale.bandwidth())
+               .on("mouseover", function(event, d) {
+                   const total = d.data.Healthy + d.data["At risk"] + d.data.Dangerous;
+                   const percentage = ((d[1] - d[0]) / total * 100).toFixed(2) + "%";
+                   tooltip.style("visibility", "visible")
+                          .text(`${d.data.gender}: ${d[1] - d[0]} (${percentage})`)
+                          .style("left", (event.pageX + 10) + "px")
+                          .style("top", (event.pageY - 10) + "px");
+                   d3.select(this).attr("stroke", "black").attr("stroke-width", 2);
+               })
+               .on("mousemove", function(event) {
+                   tooltip.style("left", (event.pageX + 10) + "px")
+                          .style("top", (event.pageY - 10) + "px");
+               })
+               .on("mouseout", function() {
+                   tooltip.style("visibility", "hidden");
+                   d3.select(this).attr("stroke", "none");
+               })
+               .on("click", function(event, d) {
+                   alert(`Gender: ${d.data.gender}\nCategory: ${d3.select(this.parentNode).datum().key}\nCount: ${d[1] - d[0]}`);
+               });
+            
+            svg.append("g")
+               .attr("transform", `translate(0,${height})`)
+               .call(d3.axisBottom(xScale));
+            
+            svg.append("g")
+               .call(d3.axisLeft(yScale));
+            
+            const legend = svg.append("g")
+                              .attr("transform", `translate(${width - 150}, 10)`);
+            
+            categories.forEach((cat, i) => {
+                const legendRow = legend.append("g")
+                                        .attr("transform", `translate(0, ${i * 20})`);
+                
+                legendRow.append("rect")
+                         .attr("width", 15)
+                         .attr("height", 15)
+                         .attr("fill", color(cat));
+                
+                legendRow.append("text")
+                         .attr("x", 20)
+                         .attr("y", 12)
+                         .attr("text-anchor", "start")
+                         .style("font-size", "12px")
+                         .text(cat);
+            });
+        });
+    </script>
+</body>
+</html>
