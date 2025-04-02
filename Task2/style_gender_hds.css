@@ -1,0 +1,51 @@
+body {
+    font-family: "Segoe UI", Roboto, sans-serif;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
+    min-height: 100vh;
+    margin: 0;
+    background: #eaeaea;
+  }
+
+  .chart-title {
+    text-align: center;
+    font-size: 28px;
+    font-weight: bold;
+    margin-top: 40px;
+    margin-bottom: 10px;
+    color: #333;
+  }
+
+  .chart-subtitle {
+    text-align: center;
+    font-size: 16px;
+    font-weight: normal;
+    color: #666;
+    margin-top: -10px;
+    margin-bottom: 20px;
+  }
+
+  .chart-container {
+    display: inline-block;
+    padding: 20px 30px;
+    border: 1px solid #ccc;
+    border-radius: 10px;
+    background-color: #fafafa;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.05);
+    width: fit-content;
+  }
+
+  .tooltip {
+    position: absolute;
+    text-align: center;
+    padding: 6px;
+    font-size: 14px;
+    background: white;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    pointer-events: none;
+    opacity: 0;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+  }

@@ -1,0 +1,18 @@
+1. Cài Đặt Live Server:
+
+- Mở VSCode.
+
+- Đi đến Extensions (hoặc nhấn Ctrl+Shift+X).
+
+- Tìm kiếm Live Server và cài đặt tiện ích này.
+
+2. Chạy Tệp HTML Với Live Server:
+
+- Mở thư mục dự án của bạn trong VSCode (chứa các tệp Task3.html, style.css, script.js và project_heart_disease.csv).
+
+- Mở Task3.html trong VSCode.
+
+- Nhấp chuột phải vào tệp Task3.html và chọn Open with Live Server.
+
+- Trình duyệt sẽ tự động mở và bạn sẽ thấy biểu đồ với dữ liệu từ project_heart_disease.csv.
+
