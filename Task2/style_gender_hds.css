@@ -11,10 +11,10 @@ body {
 
   .chart-title {
     text-align: center;
-    font-size: 28px;
+    font-size: 30px;
     font-weight: bold;
     margin-top: 40px;
-    margin-bottom: 10px;
+    margin-bottom: 40px;
     color: #333;
   }
 
@@ -41,7 +41,7 @@ body {
     position: absolute;
     text-align: center;
     padding: 6px;
-    font-size: 14px;
+    font-size: 16px;
     background: white;
     border: 1px solid #ccc;
     border-radius: 4px;

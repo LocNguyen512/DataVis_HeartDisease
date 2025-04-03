@@ -32,14 +32,14 @@ d3.csv("project_heart_disease.csv").then(rawData => {
     ["Yes", "No"].forEach(status => {
         const count = grouped[group][status];
         const percent = count / total * 100;
-        data.push({ ageGroup: group, status, value: percent });
+        data.push({ ageGroup: group, status, value: percent, count: count, total: total });
     });
     });
 
     const x0 = d3.scaleBand()
     .domain(ageGroups)
     .range([0, width])
-    .paddingInner(0.2);
+    .paddingInner(0.1);
 
     const x1 = d3.scaleBand()
     .domain(["Yes", "No"])
@@ -56,18 +56,25 @@ d3.csv("project_heart_disease.csv").then(rawData => {
 
     g.append("g")
     .attr("transform", `translate(0,${height})`)
-    .call(d3.axisBottom(x0));
+    .call(d3.axisBottom(x0))
+    .selectAll("text")
+    .style("font-size", "14px"); // 👈 tăng font-size
+
+
 
     g.append("g")
-    .call(d3.axisLeft(y).ticks(10).tickFormat(d => d + "%"));
+    .call(d3.axisLeft(y).ticks(10).tickFormat(d => d + "%"))
+    .selectAll("text")
+    .style("font-size", "14px");
     svg.append("text")
     .attr("transform", "rotate(-90)")
     .attr("x", - (margin.top + height / 2))
-    .attr("y", 20)  // 👈 Thay vì dùng `dy`
+    .attr("y", 13)  // 👈 Thay vì dùng `dy`
     .attr("text-anchor", "middle")
-    .style("font-size", "15px")
+    .style("font-size", "18px")
     .style("font-weight", "bold")
-    .text("Tỉ lệ mắc bệnh tim (%)");
+    .text("Heart Disease Proportion (%)");
+
     g.append("g")
     .attr("class", "grid")
     .call(
@@ -80,9 +87,9 @@ d3.csv("project_heart_disease.csv").then(rawData => {
     .attr("x", margin.left + width / 2)
     .attr("y", height + margin.top + 40)
     .attr("text-anchor", "middle")
-    .style("font-size", "15px")
+    .style("font-size", "18px")
     .style("font-weight", "bold")
-    .text("Nhóm tuổi");
+    .text("Age groups");
 
     
     const groups = g.selectAll(".ageGroup")
@@ -103,9 +110,11 @@ d3.csv("project_heart_disease.csv").then(rawData => {
         d3.select("#tooltip")
         .style("opacity", 1)
         .html(`
-            <strong>Nhóm tuổi:</strong> ${d.ageGroup}<br/>
-            <strong>Tình trạng:</strong> ${d.status === "Yes" ? "Mắc bệnh tim" : "Không mắc bệnh"}<br/>
-            <strong>Tỉ lệ:</strong> ${d.value.toFixed(1)}%
+            <strong>Age Group:</strong> ${d.ageGroup}<br/>
+            <strong>Heart Disease Status:</strong> ${d.status}<br/>
+            <strong>Count:</strong> ${d.count}<br/>
+            <strong>Percentage:</strong> ${d.value.toFixed(1)}%<br/>
+            <strong>Total in group:</strong> ${d.total}
         `)
         .style("left", (event.pageX + 10) + "px")
         .style("top", (event.pageY - 40) + "px");
@@ -126,11 +135,11 @@ d3.csv("project_heart_disease.csv").then(rawData => {
     .data(d => d[1])
     .join("text")
     .attr("x", d => x1(d.status) + x1.bandwidth() / 2)
-    .attr("y", d => y(d.value) - 5)
+    .attr("y", d => y(d.value) + (height - y(d.value)) / 2 + 5) // 👈 nằm giữa bar
     .attr("text-anchor", "middle")
-    .attr("fill", "#000")
-    .style("font-size", "12px")
-    .text(d => `${d.value.toFixed(1)}%`);
+    .attr("fill", "#fff") // màu trắng để nổi bật trên nền cột
+    .style("font-size", "20px")
+    .text(d => `${d.count}`);
 
     // 👉 Legend đẹp
     const legend = svg.append("g")
@@ -139,7 +148,7 @@ d3.csv("project_heart_disease.csv").then(rawData => {
     legend.append("rect")
     .attr("x", -10)
     .attr("y", -20)
-    .attr("width", 140)
+    .attr("width", 200)
     .attr("height", 90)
     .attr("fill", "#fff")
     .attr("stroke", "#ccc")
@@ -149,7 +158,7 @@ d3.csv("project_heart_disease.csv").then(rawData => {
     legend.append("text")
     .attr("x", 0)
     .attr("y", 0)
-    .attr("font-size", "13px")
+    .attr("font-size", "18px")
     .attr("font-weight", "bold")
     .text("Heart Disease Status");
 
@@ -158,7 +167,7 @@ d3.csv("project_heart_disease.csv").then(rawData => {
         .attr("transform", `translate(0, ${(i + 1) * 20})`);
 
     row.append("rect")
-        .attr("width", 15)
+        .attr("width", 18)
         .attr("height", 15)
         .attr("fill", color(key));
 
