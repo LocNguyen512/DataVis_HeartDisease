@@ -16,29 +16,29 @@ d3.csv("project_heart_disease.csv").then(data => {
     const total = value ? value.Yes + value.No : 1;
     return {
       group: key,
-      Yes: value ? (value.Yes / total) * 100 : 0,
-      No: value ? (value.No / total) * 100 : 0,
+      Yes: value ? value.Yes : 0,
+      No: value ? value.No : 0,
       total: total
     };
   });
 
   const svg = d3.select("#chartGender"),
         margin = {top: 40, right: 200, bottom: 70, left: 80},
-        width = 1000,
-        height = 500;
+        width = 800,
+        height = 400;
 
   const x = d3.scaleBand()
     .domain(processedData.map(d => d.group))
     .range([margin.left, margin.left + width])
-    .padding(0.3);
+    .padding(0.2);
 
-  const y = d3.scaleLinear()
-    .domain([0, 100])
+    const y = d3.scaleLinear()
+    .domain([0, d3.max(processedData, d => d.total)])
     .range([margin.top + height, margin.top]);
 
   const color = d3.scaleOrdinal()
-    .domain(["No", "Yes"])
-    .range(["#5bc0de", "#d9534f"]);
+    .domain(["Yes", "No"])
+    .range(["#d9534f", "#5bc0de"]);
 
   const stackedData = d3.stack().keys(["No", "Yes"])(processedData);
 
@@ -77,9 +77,10 @@ d3.csv("project_heart_disease.csv").then(data => {
     .attr("class", "bar")
     .on("mouseover", function(event, d) {
       const key = this.parentNode.__data__.key;
-      const percent = d[1] - d[0];
+      const count = d[1] - d[0]; // ✅ dùng trực tiếp giá trị count
       const total = d.data.total;
-      const count = Math.round(percent / 100 * total);
+      const percent = (count / total) * 100;
+    
       tooltip.style("opacity", 1)
         .html(`
           <strong>Gender:</strong> ${d.data.group}<br/>
@@ -90,6 +91,7 @@ d3.csv("project_heart_disease.csv").then(data => {
         `)
         .style("left", (event.pageX + 10) + "px")
         .style("top", (event.pageY - 40) + "px");
+    
       d3.select(this).attr("opacity", 0.8);
     })
     .on("mousemove", function(event) {
@@ -109,10 +111,9 @@ d3.csv("project_heart_disease.csv").then(data => {
     .attr("x", d => x(d.data.group) + x.bandwidth() / 2)
     .attr("y", d => (y(d[1]) + y(d[0])) / 2)
     .text(d => {
-      const percent = d[1] - d[0];
-      const total = d.data.total;
-      const count = Math.round(percent / 100 * total);
-      return count;
+      const count = d[1] - d[0];
+      const percent = (count / d.data.total) * 100;
+      return `${percent.toFixed(1)}%`;
     })
     .attr("text-anchor", "middle")
     .attr("fill", "white")
@@ -129,7 +130,7 @@ d3.csv("project_heart_disease.csv").then(data => {
   // 🔹 Trục Y
   svg.append("g")
     .attr("transform", `translate(${margin.left},0)`)
-    .call(d3.axisLeft(y).ticks(5).tickFormat(d => d + "%"))
+    .call(d3.axisLeft(y).ticks(5).tickFormat(d => d))
     .selectAll("text")
     .style("font-size", "15px");
 
@@ -150,7 +151,7 @@ d3.csv("project_heart_disease.csv").then(data => {
     .style("text-anchor", "middle")
     .style("font-size", "20px")
     .style("font-weight", "bold")
-    .text("Heart Disease Proportion (%)");
+    .text("Number of People");
 
   // 🔹 Legend
   const legend = svg.append("g")
@@ -173,7 +174,7 @@ d3.csv("project_heart_disease.csv").then(data => {
     .style("font-weight", "bold")
     .style("font-size", "15px");
 
-  ["No", "Yes"].forEach((key, i) => {
+  ["Yes", "No"].forEach((key, i) => {
     const g = legend.append("g").attr("transform", `translate(0, ${i * 30})`);
     g.append("rect")
       .attr("width", 18)
