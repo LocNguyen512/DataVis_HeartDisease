@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chart Dashboard</title>
+    
+</head>
+<body>
+    <link rel="stylesheet" href="styles.css">
+    <h1>My Chart Dashboard</h1>
+
+    <div class="dashboard-grid">
+        <div class="chart-container">
+            <h2>Chart 1 Title</h2>
+            <iframe id="chart1Frame" src="charts/chart1.html" onload="resizeIframe(this)"></iframe>
+        </div>
+
+        <div class="chart-container">
+            <h2>Chart 2 Title</h2>
+            <iframe id="chart2Frame" src="charts/chart2.html" onload="resizeIframe(this)"></iframe>
+        </div>
+
+        <div class="chart-container">
+            <h2>Chart 5 Title</h2>
+            <iframe id="chart3Frame" src="charts/chart_5.html" onload="resizeIframe(this)"></iframe>
+        </div>
+
+        <div class="chart-container">
+            <h2>Chart 6 Title</h2>
+            <iframe id="chart3Frame" src="charts/chart_6.html" onload="resizeIframe(this)"></iframe>
+        </div>
+
+        <div class="chart-container">
+            <h2>Chart test Title</h2>
+            <iframe id="chart3Frame" src="charts/chart_6_backup.html" onload="resizeIframe(this)"></iframe>
+        </div>
+
+        </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
