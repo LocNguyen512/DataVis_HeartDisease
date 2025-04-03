@@ -85,7 +85,6 @@ d3.csv("project_heart_disease.csv").then(rawData => {
     .text("Nhóm tuổi");
 
     
-
     const groups = g.selectAll(".ageGroup")
     .data(d3.groups(data, d => d.ageGroup))
     .join("g")

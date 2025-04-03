@@ -1,6 +1,9 @@
 d3.csv("project_heart_disease.csv").then(function (data) {
     console.log("Dữ liệu CSV:", data);
     
+    // Lọc dữ liệu, loại bỏ những dòng có "Family Heart Disease" trống
+    data = data.filter(d => d["Family Heart Disease"] !== "");
+    
     // Nhóm dữ liệu theo Family History
     let groupedData = d3.rollups(
         data,
@@ -30,8 +33,8 @@ d3.csv("project_heart_disease.csv").then(function (data) {
     // Scale trục X
     const xScale = d3.scaleBand()
         .domain(transformedData.map(d => d["Family History"]))
-        .range([margin.left, width - margin.right + 300])
-        .padding(0.5);
+        .range([margin.left, width - margin.right - 200])
+        .padding(0.4);
 
     // Scale trục Y
     const yScale = d3.scaleLinear()
@@ -41,13 +44,25 @@ d3.csv("project_heart_disease.csv").then(function (data) {
 
     // Màu sắc cột
     const color = d3.scaleOrdinal()
-        .domain(["No", "Yes"])
-        .range(["green", "red"]);
+        .domain(["Yes", "No"])
+        .range(["#d9534f", "#5bc0de"]);
 
     // Tooltip
     const tooltip = d3.select(".tooltip");
 
-    // Nhóm các cột
+    // Thêm lưới cho trục Y và thay đổi màu sắc
+    svg.append("g")
+        .attr("class", "grid")
+        .attr("transform", `translate(${margin.left},0)`)
+        .call(d3.axisLeft(yScale)
+            .tickSize(-width + 300 )
+            .tickFormat("")
+        )
+        .selectAll(".tick line")  // Chọn các đường kẻ (line) của trục Y
+        .style("stroke", "#cccccc")  // Màu sắc đường lưới
+        .style("stroke-width", "1px");  // Độ dày của đường lưới
+
+    // Vẽ cột chồng
     const group = svg.selectAll("g.bar-group")
         .data(transformedData)
         .enter().append("g")
@@ -74,7 +89,9 @@ d3.csv("project_heart_disease.csv").then(function (data) {
                         .html(`<strong> Category: </strong>${key === "Yes" ? "Heart Disease" : "No Heart Disease"}<br>
                             <strong>Family Heart Disease:</strong> ${d["Family History"]}<br>
                             <strong> Count:</strong> ${d[key]}<br>
-                            <strong> Percentage: </strong> ${((d[key] / d.Total) * 100).toFixed(1)}%`);
+                            <strong> Percentage: </strong> ${((d[key] / d.Total) * 100).toFixed(1)}%<br>
+                            <strong>Total in group:</strong> ${d.Total}`);
+                    
                     d3.select(this).style("opacity", 0.7);
                 })
                 .on("mousemove", function (event) {
@@ -84,19 +101,8 @@ d3.csv("project_heart_disease.csv").then(function (data) {
                 .on("mouseout", function () {
                     tooltip.style("display", "none");
                     d3.select(this).style("opacity", 1);
-                })
-                .on("click", function () {
-                    d3.selectAll(".bar").classed("selected", false);
-                    d3.select(this).classed("selected", true);
-
-                    d3.select("#details-content").html(`
-                        <strong>Heart Disease:</strong> ${key}<br>
-                        <strong>Number of people:</strong> ${d[key]}<br>
-                        <strong>Percentage:</strong> ${((d[key] / d.Total) * 100).toFixed(1)}%<br>
-                        <strong>Total in group:</strong> ${d.Total}
-                    `);
                 });
-            
+
             yStart -= barHeight;
         });
     });
@@ -132,28 +138,83 @@ d3.csv("project_heart_disease.csv").then(function (data) {
         .style("font-weight", "bold")
         .text("Number of People");
 
+    // Thêm nhãn phần trăm vào cột
+    group.each(function (d) {
+        let yStart = height - margin.bottom;
+        let parent = d3.select(this);
+
+        ["No", "Yes"].forEach(key => {
+            let barHeight = height - margin.bottom - yScale(d[key]);
+
+            parent.append("text")
+                .attr("x", xScale.bandwidth() / 2) // Canh giữa theo cột
+                .attr("y", yStart - barHeight / 2) // Đặt ở giữa cột
+                .attr("text-anchor", "middle") // Căn giữa text
+                .attr("dy", "0.35em") // Điều chỉnh để chữ hiển thị chính xác hơn
+                .style("fill", "white") // Màu chữ
+                .style("font-size", "16px")
+                .style("font-weight", "bold")
+                .text(`${((d[key] / d.Total) * 100).toFixed(1)}%`);
+            
+            yStart -= barHeight;
+        });
+    });
+
     // Thêm chú thích (Legend)
-    const legend = svg.append("g")
-        .attr("transform", `translate(${width - 200}, 0)`);
+    const legendContainer = svg.append("g")
+        .attr("transform", `translate(${width - 210}, 70)`); // Điều chỉnh vị trí cho phù hợp
+
+    // Thêm nền cho Legend (như trong phần trước)
+    legendContainer.append("rect")
+        .attr("width", 210)
+        .attr("height", 110) 
+        .attr("fill", "#ffffff")
+        .attr("stroke", "#999")
+        .attr("stroke-width", 1.5)
+        .attr("rx", 12)
+        .attr("ry", 12) 
+        .attr("x", -10)
+        .attr("y", -10);
+
+    // Thêm tiêu đề cho Legend
+    legendContainer.append("text")
+        .attr("x", 10)
+        .attr("y", 20)
+        .attr("text-anchor", "start")
+        .style("font-size", "14px")
+        .style("font-weight", "bold")
+        .text("Heart Disease Status");
+
+    // Thêm các mục Legend
+    const legend = legendContainer.append("g")
+        .attr("transform", "translate(10, 30)"); // Dịch xuống dưới tiêu đề
 
     legend.selectAll("rect")
         .data(["No", "Yes"])
         .enter().append("rect")
         .attr("x", 0)
-        .attr("y", (d, i) => i * 20)
-        .attr("width", 15)
-        .attr("height", 15)
-        .attr("fill", d => color(d));
+        .attr("y", (d, i) => i * 30)
+        .attr("width", 20)
+        .attr("height", 20)
+        .attr("fill", d => color(d)); // Màu sắc cho các mục
 
     legend.selectAll("text")
         .data(["No", "Yes"])
         .enter().append("text")
-        .attr("x", 20)
-        .attr("y", (d, i) => i * 20 + 12)
+        .attr("x", 30) // Cách chữ ra khỏi hình chữ nhật
+        .attr("y", (d, i) => i * 30 + 15) // Điều chỉnh vị trí văn bản cho phù hợp
         .text(d => `Heart Disease: ${d}`)
         .style("font-weight", "bold")
-        .style("font-size", "16px");
-
+        .style("font-size", "12px"); // Cỡ chữ nhỏ hơn
+    
+    // Thêm tiêu đề cho biểu đồ
+    svg.append("text")
+        .attr("x", width / 2)
+        .attr("y", margin.top / 2)
+        .attr("text-anchor", "middle")
+        .style("font-size", "20px")
+        .style("font-weight", "bold")
+        .text("Distribution of Heart Disease by Family History");
 }).catch(function(error) {
     console.error("Lỗi khi tải CSV:", error);
 });
