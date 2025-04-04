@@ -13,8 +13,8 @@ h1 {
 
 .dashboard-grid {
     display: grid;
-    /* grid-template-columns: repeat(auto-fit, minmax(500px, 1fr)); */
-    grid-template-columns: repeat(2, 1fr); /* Creates exactly 2 columns */
+    /* grid-template-columns: repeat(auto-fit, minmax(00px, 1fr)); */
+    grid-template-columns: repeat(2, 1fr);
     gap: 20px;
 }
 
@@ -36,7 +36,7 @@ h1 {
 
 iframe {
     width: 100%;
-    height: 250px; /* Set an initial smaller height */
+    height: 200px; /* Set an initial smaller height */
     transform: scale(1);
     transform-origin: center;
     border: none;

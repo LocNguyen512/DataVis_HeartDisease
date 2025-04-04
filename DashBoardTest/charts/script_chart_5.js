@@ -122,7 +122,7 @@ d3.csv("project_heart_disease.csv", function (data) {
 		.attr("height", d => y(d.value.q1) - y(d.value.q3))
 		.attr("width", boxWidth)
 		.attr("stroke", "black")
-		.style("fill", d => d.key === "Yes" ? "red" : "green") // Red for "Yes", Green for "No"
+		.style("fill", d => d.key === "Yes" ? "#d9534f" : "#5bc0de") // Red for "Yes", Green for "No"
 		.on("mouseover", function (d) {
 			console.log(d); // Debugging output
 
@@ -176,7 +176,7 @@ d3.csv("project_heart_disease.csv", function (data) {
     .text("Heart Disease Status"); // Updated legend title
 
   const legendItems = ["Yes", "No"];
-  const colors = ["red", "green"]; // Corresponding colors
+  const colors = ["#d9534f", "#5bc0de"]; // Corresponding colors
 
   legendItems.forEach((key, i) => {
     const row = legend.append("g")

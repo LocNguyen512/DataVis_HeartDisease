@@ -98,7 +98,7 @@ function drawChart(numBins) {
 		// Colors
 		var color = d3.scaleOrdinal()
 			.domain(["No", "Yes"])
-			.range(["green", "red"]);
+			.range(["#5bc0de", "#d9534f"]);
 
 		// Stack the data
 		var series = d3.stack()
