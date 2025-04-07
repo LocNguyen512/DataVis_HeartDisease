@@ -1,125 +1,126 @@
 d3.csv("project_heart_disease.csv").then(data => {
-    const filtered = data.filter(d => d["Smoking"] && d["Heart Disease Status"]);
-    const smokingOrder = ["Yes", "No"];
+    const isTask3 = document.querySelector("#chart3") !== null;
+    const svg = d3.select(isTask3 ? "#chart3" : "#chart2"),
+        margin = { top: 30, right: 30, bottom: 50, left: 60 },
+        width = 700,
+        height = +svg.attr("height") - margin.top - margin.bottom,
+        g = svg.append("g").attr("transform", `translate(${margin.left},${margin.top})`);
 
+    const filtered = data.filter(d => (isTask3 ? d["Smoking"] : d["Exercise Habits"]) && d["Heart Disease Status"]);
+    const groupOrder = isTask3 ? ["Yes", "No"] : ["Low", "Medium", "High"];
     const counts = d3.rollup(
         filtered,
         v => ({
             Yes: v.filter(d => d["Heart Disease Status"] === "Yes").length,
             No: v.filter(d => d["Heart Disease Status"] === "No").length
         }),
-        d => d["Smoking"]
+        d => isTask3 ? d["Smoking"] : d["Exercise Habits"]
     );
 
-    const processedData = smokingOrder.map(key => {
+    const processedData = groupOrder.map(key => {
         const value = counts.get(key);
         const total = value ? value.Yes + value.No : 1;
         return {
             group: key,
             Yes: value ? (value.Yes / total) * 100 : 0,
-            No: value ? (value.No / total) * 100 : 0
+            No: value ? (value.No / total) * 100 : 0,
+            countYes: value ? value.Yes : 0,
+            countNo: value ? value.No : 0,
+            total: value ? value.Yes + value.No : 0
         };
     });
 
-    const svg = d3.select("#chart3"),
-        margin = { top: 40, right: 150, bottom: 80, left: 80 },
-        width = 1000 - margin.left - margin.right,
-        height = 500 - margin.top - margin.bottom;
+    const x0 = d3.scaleBand().domain(groupOrder).range([0, width]).paddingInner(0.1);
+    const x1 = d3.scaleBand().domain(["Yes", "No"]).range([0, x0.bandwidth()]).padding(0.05);
+    const y = d3.scaleLinear().domain([0, 100]).range([height, 0]);
+    const color = d3.scaleOrdinal().domain(["Yes", "No"]).range(["#d9534f", "#5bc0de"]);
 
-    const x = d3.scaleBand()
-        .domain(processedData.map(d => d.group))
-        .range([margin.left, width + margin.left])
-        .padding(0.2);
+    g.append("g").attr("transform", `translate(0,${height})`)
+     .call(d3.axisBottom(x0)).selectAll("text").style("font-size", "14px");
 
-    const y = d3.scaleLinear()
-        .domain([0, 100])
-        .range([height + margin.top, margin.top]);
+    g.append("g").call(d3.axisLeft(y).ticks(10).tickFormat(d => d + "%"))
+     .selectAll("text").style("font-size", "14px");
 
-    const color = d3.scaleOrdinal()
-        .domain(["No", "Yes"])
-        .range(["#5bc0de", "#d9534f"]);
+    svg.append("text").attr("transform", "rotate(-90)")
+        .attr("x", - (margin.top + height / 2))
+        .attr("y", 13).attr("text-anchor", "middle")
+        .style("font-size", "18px").style("font-weight", "bold")
+        .text("Heart Disease Proportion (%)");
 
-    const stackedData = d3.stack().keys(["No", "Yes"])(processedData);
-    const tooltip = d3.select("#tooltip");
+    g.append("g").attr("class", "grid")
+     .call(d3.axisLeft(y).tickSize(-width).tickFormat(""));
 
-    const bars = svg.append("g")
-        .selectAll("g")
-        .data(stackedData)
+    svg.append("text")
+        .attr("x", margin.left + width / 2)
+        .attr("y", height + margin.top + 40)
+        .attr("text-anchor", "middle")
+        .style("font-size", "18px")
+        .style("font-weight", "bold")
+        .text(isTask3 ? "Smoking Status" : "Exercise Habits");
+
+    const groups = g.selectAll(".group")
+        .data(d3.groups(processedData.flatMap(d => ["Yes", "No"].map(k => ({...d, status: k}))), d => d.group))
         .join("g")
-        .attr("fill", d => color(d.key));
+        .attr("transform", d => `translate(${x0(d[0])},0)`);
 
-    bars.selectAll("rect")
-        .data(d => d)
+    groups.selectAll("rect")
+        .data(d => d[1])
         .join("rect")
-        .attr("x", d => x(d.data.group))
-        .attr("y", y(0))
-        .attr("height", 0)
-        .attr("rx", 6)
-        .attr("width", x.bandwidth())
-        .transition()
-        .duration(800)
-        .delay((d, i) => i * 100)
-        .attr("y", d => y(d[1]))
-        .attr("height", d => y(d[0]) - y(d[1]));
-
-    bars.selectAll("rect")
+        .attr("x", d => x1(d.status))
+        .attr("y", d => y(d[d.status]))
+        .attr("width", x1.bandwidth())
+        .attr("height", d => height - y(d[d.status]))
+        .attr("fill", d => color(d.status))
         .on("mouseover", function (event, d) {
-            const key = this.parentNode.__data__.key;
-            tooltip.transition().duration(100).style("opacity", 1);
-            tooltip.html(`<strong>${key === "Yes" ? "Mắc bệnh tim" : "Không mắc"}</strong><br>Tỷ lệ: ${(d[1] - d[0]).toFixed(2)}%`)
-                .style("left", (event.pageX + 10) + "px")
-                .style("top", (event.pageY - 28) + "px");
+            d3.select("#tooltip").style("opacity", 1)
+              .html(`
+                <strong>${isTask3 ? "Smoking" : "Exercise"}: </strong> ${d.group}<br/>
+                <strong>Heart Disease Status:</strong> ${d.status}<br/>
+                <strong>Percentage:</strong> ${d[d.status].toFixed(1)}%<br/>
+                <strong>Count:</strong> ${d.status === "Yes" ? d.countYes : d.countNo}<br/>
+                <strong>Total in group:</strong> ${d.total}
+              `)
+              .style("left", (event.pageX + 10) + "px")
+              .style("top", (event.pageY - 40) + "px");
             d3.select(this).attr("opacity", 0.85);
         })
-        .on("mouseout", function () {
-            tooltip.transition().duration(150).style("opacity", 0);
+        .on("mousemove", function(event) {
+            d3.select("#tooltip")
+              .style("left", (event.pageX + 10) + "px")
+              .style("top", (event.pageY - 40) + "px");
+        })
+        .on("mouseout", function() {
+            d3.select("#tooltip").style("opacity", 0);
             d3.select(this).attr("opacity", 1);
         });
 
-    bars.selectAll("text")
-        .data(d => d)
+    groups.selectAll("text.label")
+        .data(d => d[1])
         .join("text")
-        .attr("x", d => x(d.data.group) + x.bandwidth() / 2)
-        .attr("y", d => (y(d[1]) + y(d[0])) / 2)
-        .text(d => `${(d[1] - d[0]).toFixed(2)}%`)
+        .attr("x", d => x1(d.status) + x1.bandwidth() / 2)
+        .attr("y", d => y(d[d.status]) + (height - y(d[d.status])) / 2 + 5)
         .attr("text-anchor", "middle")
-        .attr("fill", d => d[1] - d[0] > 10 ? "white" : "black")
-        .style("font-size", "15px")
-        .style("font-weight", "bold");
+        .attr("fill", "#fff")
+        .style("font-size", "20px")
+        .text(d => `${d.status === "Yes" ? d.countYes : d.countNo}`);
 
-    svg.append("text")
-        .attr("transform", `translate(${margin.left + width / 2}, ${height + margin.top + 50})`)
-        .style("text-anchor", "middle")
-        .style("font-size", "16px")
-        .style("font-weight", "bold")
-        .text("Smoking Status");
+    const legend = svg.append("g")
+        .attr("transform", `translate(${margin.left + width + 30}, ${margin.top})`);
 
-    svg.append("text")
-        .attr("transform", `rotate(-90)`)
-        .attr("y", margin.left - 80)
-        .attr("x", -(margin.top + height / 2))
-        .attr("dy", "1em")
-        .style("text-anchor", "middle")
-        .style("font-size", "16px")
-        .style("font-weight", "bold")
-        .text("% Heart Disease Proportion");
+    legend.append("rect")
+        .attr("x", -10).attr("y", -20)
+        .attr("width", 200).attr("height", 90)
+        .attr("fill", "#fff").attr("stroke", "#ccc")
+        .attr("stroke-width", 1).attr("rx", 8);
 
-    svg.append("g")
-        .attr("transform", `translate(0,${height + margin.top})`)
-        .call(d3.axisBottom(x).tickSizeOuter(0))
-        .selectAll("text")
-        .style("font-size", "14px");
+    legend.append("text")
+        .attr("x", 0).attr("y", 0)
+        .attr("font-size", "18px").attr("font-weight", "bold")
+        .text("Heart Disease Status");
 
-    svg.append("g")
-        .attr("transform", `translate(${margin.left},0)`)
-        .call(d3.axisLeft(y).ticks(5).tickFormat(d => d + "%"))
-        .selectAll("text")
-        .style("font-size", "14px");
-
-    svg.append("g")
-        .attr("transform", `translate(${margin.left},0)`)
-        .call(d3.axisLeft(y).tickSize(-width).tickFormat(""))
-        .selectAll("line")
-        .attr("stroke", "#dcdcdc")
-        .attr("stroke-dasharray", "3,2");
+    ["Yes", "No"].forEach((key, i) => {
+        const row = legend.append("g").attr("transform", `translate(0, ${(i + 1) * 20})`);
+        row.append("rect").attr("width", 18).attr("height", 15).attr("fill", color(key));
+        row.append("text").attr("x", 20).attr("y", 12).text(key);
+    });
 });
