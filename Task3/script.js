@@ -1,3 +1,4 @@
+
 d3.csv("project_heart_disease.csv").then(data => {
     const isTask3 = document.querySelector("#chart3") !== null;
     const svg = d3.select(isTask3 ? "#chart3" : "#chart2"),
@@ -22,30 +23,28 @@ d3.csv("project_heart_disease.csv").then(data => {
         const total = value ? value.Yes + value.No : 1;
         return {
             group: key,
-            Yes: value ? (value.Yes / total) * 100 : 0,
-            No: value ? (value.No / total) * 100 : 0,
-            countYes: value ? value.Yes : 0,
-            countNo: value ? value.No : 0,
-            total: value ? value.Yes + value.No : 0
+            Yes: value ? value.Yes : 0,
+            No: value ? value.No : 0,
+            percentYes: value ? (value.Yes / total) * 100 : 0,
+            percentNo: value ? (value.No / total) * 100 : 0,
+            total: value ? total : 0
         };
     });
 
-    const x0 = d3.scaleBand().domain(groupOrder).range([0, width]).paddingInner(0.1);
-    const x1 = d3.scaleBand().domain(["Yes", "No"]).range([0, x0.bandwidth()]).padding(0.05);
-    const y = d3.scaleLinear().domain([0, 100]).range([height, 0]);
+    const x0 = d3.scaleBand().domain(groupOrder).range([0, width]).padding(0.2);
+    const y = d3.scaleLinear().domain([0, d3.max(processedData, d => d.total)]).nice().range([height, 0]);
     const color = d3.scaleOrdinal().domain(["Yes", "No"]).range(["#d9534f", "#5bc0de"]);
 
     g.append("g").attr("transform", `translate(0,${height})`)
      .call(d3.axisBottom(x0)).selectAll("text").style("font-size", "14px");
 
-    g.append("g").call(d3.axisLeft(y).ticks(10).tickFormat(d => d + "%"))
-     .selectAll("text").style("font-size", "14px");
+    g.append("g").call(d3.axisLeft(y)).selectAll("text").style("font-size", "14px");
 
     svg.append("text").attr("transform", "rotate(-90)")
         .attr("x", - (margin.top + height / 2))
         .attr("y", 13).attr("text-anchor", "middle")
         .style("font-size", "18px").style("font-weight", "bold")
-        .text("Heart Disease Proportion (%)");
+        .text("Number of People");
 
     g.append("g").attr("class", "grid")
      .call(d3.axisLeft(y).tickSize(-width).tickFormat(""));
@@ -59,50 +58,68 @@ d3.csv("project_heart_disease.csv").then(data => {
         .text(isTask3 ? "Smoking Status" : "Exercise Habits");
 
     const groups = g.selectAll(".group")
-        .data(d3.groups(processedData.flatMap(d => ["Yes", "No"].map(k => ({...d, status: k}))), d => d.group))
+        .data(processedData)
         .join("g")
-        .attr("transform", d => `translate(${x0(d[0])},0)`);
+        .attr("transform", d => `translate(${x0(d.group)},0)`);
 
-    groups.selectAll("rect")
-        .data(d => d[1])
-        .join("rect")
-        .attr("x", d => x1(d.status))
-        .attr("y", d => y(d[d.status]))
-        .attr("width", x1.bandwidth())
-        .attr("height", d => height - y(d[d.status]))
-        .attr("fill", d => color(d.status))
-        .on("mouseover", function (event, d) {
-            d3.select("#tooltip").style("opacity", 1)
-              .html(`
-                <strong>${isTask3 ? "Smoking" : "Exercise"}: </strong> ${d.group}<br/>
-                <strong>Heart Disease Status:</strong> ${d.status}<br/>
-                <strong>Percentage:</strong> ${d[d.status].toFixed(1)}%<br/>
-                <strong>Count:</strong> ${d.status === "Yes" ? d.countYes : d.countNo}<br/>
-                <strong>Total in group:</strong> ${d.total}
-              `)
-              .style("left", (event.pageX + 10) + "px")
-              .style("top", (event.pageY - 40) + "px");
-            d3.select(this).attr("opacity", 0.85);
-        })
-        .on("mousemove", function(event) {
-            d3.select("#tooltip")
-              .style("left", (event.pageX + 10) + "px")
-              .style("top", (event.pageY - 40) + "px");
-        })
-        .on("mouseout", function() {
-            d3.select("#tooltip").style("opacity", 0);
-            d3.select(this).attr("opacity", 1);
+    groups.each(function (d) {
+        let yStart = height;
+        ["No", "Yes"].forEach(key => {
+            const val = d[key];
+            const barHeight = height - y(val);
+            yStart -= barHeight;
+
+            d3.select(this).append("rect")
+                .attr("x", 0)
+                .attr("y", yStart)
+                .attr("width", x0.bandwidth())
+                .attr("height", barHeight)
+                .attr("fill", color(key))
+                .attr("class", "bar")
+                .on("mouseover", function (event) {
+                    d3.select("#tooltip").style("opacity", 1)
+                        .html(`
+                            <strong>${isTask3 ? "Smoking" : "Exercise"}: </strong> ${d.group}<br/>
+                            <strong>Heart Disease Status:</strong> ${key}<br/>
+                            <strong>Count:</strong> ${val}<br/>
+                            <strong>Percentage:</strong> ${key === "Yes" ? d.percentYes.toFixed(1) : d.percentNo.toFixed(1)}%<br/>
+                            <strong>Total in group:</strong> ${d.total}
+                        `)
+                        .style("left", (event.pageX + 10) + "px")
+                        .style("top", (event.pageY - 40) + "px");
+                    d3.select(this).attr("opacity", 0.85);
+                })
+                .on("mousemove", function(event) {
+                    d3.select("#tooltip")
+                        .style("left", (event.pageX + 10) + "px")
+                        .style("top", (event.pageY - 40) + "px");
+                })
+                .on("mouseout", function () {
+                    d3.select("#tooltip").style("opacity", 0);
+                    d3.select(this).attr("opacity", 1);
+                });
+
+            // Thêm text phần trăm trên mỗi thanh
+            d3.select(this).append("text")
+                .attr("x", x0.bandwidth() / 2)
+                .attr("y", yStart + barHeight / 2 + 5)
+                .attr("text-anchor", "middle")
+                .attr("fill", "#fff")
+                .style("font-size", "16px")
+                .style("font-weight", "bold")
+                .text(`${key === "Yes" ? d.percentYes.toFixed(1) : d.percentNo.toFixed(1)}%`);
         });
 
-    groups.selectAll("text.label")
-        .data(d => d[1])
-        .join("text")
-        .attr("x", d => x1(d.status) + x1.bandwidth() / 2)
-        .attr("y", d => y(d[d.status]) + (height - y(d[d.status])) / 2 + 5)
-        .attr("text-anchor", "middle")
-        .attr("fill", "#fff")
-        .style("font-size", "20px")
-        .text(d => `${d.status === "Yes" ? d.countYes : d.countNo}`);
+        // Tổng số ở đầu cột
+        d3.select(this).append("text")
+            .attr("x", x0.bandwidth() / 2)
+            .attr("y", y(d.total) - 10)
+            .attr("text-anchor", "middle")
+            .attr("fill", "#000")
+            .style("font-size", "14px")
+            .style("font-weight", "bold")
+            .text(`${d.total}`);
+    });
 
     const legend = svg.append("g")
         .attr("transform", `translate(${margin.left + width + 30}, ${margin.top})`);
