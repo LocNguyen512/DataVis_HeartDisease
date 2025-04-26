@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Heart Disease Risk Line Chart</title>
+    <link rel="stylesheet" href="styles.css">
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <style>
+        body {
+            font-family: 'Roboto', sans-serif;
+            background-color: #f9f9f9;
+            margin: 0;
+            padding: 0;
+            color: #333;
+            text-align: center;
+        }
+
+        h2 {
+            font-size: 24px;
+            margin: 20px 0;
+        }
+
+        svg {
+            background-color: white;
+            border: 1px solid #ddd;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+            margin-top: 20px;
+        }
+
+        /* Line Styles */
+        .line {
+            fill: none;
+            stroke-width: 2px;
+            opacity: 0.8;
+            transition: stroke-width 0.2s, opacity 0.2s;
+            cursor: pointer;
+        }
+
+        /* Axis Labels */
+        .axis-label {
+            font-size: 14px;
+            fill: #555;
+        }
+
+        /* Tooltip Styling - ONLY KEEP THIS */
+        .tooltip {
+            position: absolute;
+            background-color: rgba(0, 0, 0, 0.8); /* dark background */
+            color: #fff; /* white text */
+            padding: 8px 12px;
+            border-radius: 4px;
+            font-size: 13px;
+            pointer-events: none;
+            opacity: 0;
+            transition: opacity 0.3s;
+            text-align: center;
+        }
+
+        /* Grid Lines */
+        .grid line {
+            stroke: #ccc;
+            stroke-opacity: 0.7;
+            shape-rendering: crispEdges;
+        }
+
+        .grid path {
+            stroke-width: 0;
+        }
+
+        /* Legend */
+        .legend {
+            font-size: 12px;
+            cursor: default;
+        }
+
+        .legend rect {
+            rx: 2px;
+            ry: 2px;
+        }
+    </style>
+</head>
+<body>
+    <h2>Heart Disease Risk vs Unhealthy Lifestyle Score (by Age Group)</h2>
+    <svg width="800" height="500"></svg>
+
+    <script>
+    const svg = d3.select("svg"),
+          margin = {top: 50, right: 150, bottom: 50, left: 60},
+          width = +svg.attr("width") - margin.left - margin.right,
+          height = +svg.attr("height") - margin.top - margin.bottom,
+          g = svg.append("g").attr("transform", `translate(${margin.left},${margin.top})`);
+
+    // Tooltip div
+    const tooltip = d3.select("body").append("div")
+        .attr("class", "tooltip");
+
+    d3.csv("pivot_heart_disease_risk.csv").then(data => {
+        // Convert numeric values
+        data.forEach(d => {
+            d['Unhealthy Lifestyle Score'] = +d['Unhealthy Lifestyle Score'];
+            d['<30'] = +d['<30'];
+            d['30-45'] = +d['30-45'];
+            d['45-60'] = +d['45-60'];
+            d['60+'] = +d['60+'];
+        });
+
+        const ageGroups = ["<30", "30-45", "45-60", "60+"];
+
+        // Scales
+        const x = d3.scaleLinear()
+            .domain(d3.extent(data, d => d['Unhealthy Lifestyle Score']))
+            .range([0, width]);
+
+        const y = d3.scaleLinear()
+            .domain([15, d3.max(data, d => Math.max(d['<30'], d['30-45'], d['45-60'], d['60+']))])
+            .range([height, 0]);
+
+        const color = d3.scaleOrdinal()
+            .domain(ageGroups)
+            .range(["#1f77b4", "#ff7f0e", "#2ca02c", "#d62728"]);
+
+        // Line generator
+        const line = ageGroup => d3.line()
+            .x(d => x(d['Unhealthy Lifestyle Score']))
+            .y(d => y(d[ageGroup]));
+
+        // Draw lines
+        ageGroups.forEach(ageGroup => {
+            const gLine = g.append("g"); // create a subgroup for each ageGroup
+
+            // Draw line
+            gLine.append("path")
+                .datum(data)
+                .attr("class", "line")
+                .attr("d", line(ageGroup))
+                .attr("stroke", color(ageGroup));
+
+            // Draw points
+            gLine.selectAll("circle")
+                .data(data)
+                .enter()
+                .append("circle")
+                .attr("cx", d => x(d['Unhealthy Lifestyle Score']))
+                .attr("cy", d => y(d[ageGroup]))
+                .attr("r", 4)
+                .attr("fill", color(ageGroup))
+                .on("mouseover", function(event, d) {
+                    d3.select(this).transition().duration(100).attr("r", 7);
+                    tooltip.transition().duration(200).style("opacity", 1);
+                    tooltip.html(`
+                        <strong>Age Group:</strong> ${ageGroup}<br/>
+                        <strong>Unhealthy Score:</strong> ${d['Unhealthy Lifestyle Score']}<br/>
+                        <strong>Risk (%):</strong> ${d[ageGroup].toFixed(3)}%
+                    `)
+                    .style("left", (event.pageX + 10) + "px")
+                    .style("top", (event.pageY - 30) + "px");
+                })
+                .on("mousemove", function(event) {
+                    tooltip.style("left", (event.pageX + 10) + "px")
+                           .style("top", (event.pageY - 30) + "px");
+                })
+                .on("mouseout", function() {
+                    d3.select(this).transition().duration(100).attr("r", 4);
+                    tooltip.transition().duration(300).style("opacity", 0);
+                });
+        });
+
+        // X Axis
+        g.append("g")
+            .attr("transform", `translate(0,${height})`)
+            .call(d3.axisBottom(x).ticks(4))
+            .append("text")
+            .attr("class", "axis-label")
+            .attr("x", width / 2)
+            .attr("y", 40)
+            .attr("fill", "black")
+            .text("Unhealthy Lifestyle Score");
+
+        // Y Axis
+        g.append("g")
+            .call(d3.axisLeft(y))
+            .append("text")
+            .attr("class", "axis-label")
+            .attr("transform", "rotate(-90)")
+            .attr("x", -height / 2)
+            .attr("y", -40)
+            .attr("fill", "black")
+            .attr("text-anchor", "middle")
+            .text("Heart Disease Risk (%)");
+
+        // Legend
+        const legend = g.selectAll(".legend")
+            .data(ageGroups)
+            .enter().append("g")
+            .attr("transform", (d, i) => `translate(${width + 20},${i * 25})`);
+
+        // Title for the legend
+        g.append("text")
+            .attr("x", width + 50)
+            .attr("y", -20)
+            .attr("text-anchor", "middle")
+            .attr("font-size", "14px")
+            .attr("font-weight", "bold")
+            .text("Age Group");
+
+        legend.append("rect")
+            .attr("x", 0)
+            .attr("width", 18)
+            .attr("height", 18)
+            .attr("fill", color);
+
+        legend.append("text")
+            .attr("x", 24)
+            .attr("y", 9)
+            .attr("dy", "0.35em")
+            .text(d => d);
+    });
+    </script>
+</body>
+</html>
