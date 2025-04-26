@@ -1,0 +1,49 @@
+body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    background-color: #f0f2f5;
+  }
+  
+  header {
+    background-color: #4CAF50;
+    color: white;
+    padding: 1rem;
+    text-align: center;
+  }
+  
+  .grid-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); /* thu nhỏ ô button */
+    gap: 20px;
+    padding: 20px;
+  }
+  
+  .task-button {
+    text-align: center;
+    background: white;
+    border-radius: 10px;
+    overflow: hidden;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    text-decoration: none;
+    color: black;
+    transition: transform 0.2s;
+    padding: 10px;
+  }
+  
+  .task-button img {
+    width: 100%;
+    height: 100px; /* Giảm chiều cao ảnh xuống */
+    object-fit: cover;
+    border-radius: 8px;
+  }
+  
+  .task-button p {
+    margin: 10px 0 0 0;
+    font-weight: bold;
+    font-size: 1rem; /* Thu nhỏ chữ một chút */
+  }
+  
+  .task-button:hover {
+    transform: scale(1.05);
+  }
+  
