@@ -1,0 +1,74 @@
+@import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap');
+
+/* Base Styling */
+body {
+    font-family: 'Roboto', sans-serif;
+    background-color: #f9f9f9;
+    margin: 0;
+    padding: 0;
+    color: #333;
+    text-align: center;
+}
+
+h2 {
+    font-size: 24px;
+    margin: 20px 0;
+}
+
+svg {
+    background-color: white;
+    border: 1px solid #ddd;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+    margin-top: 20px;
+}
+
+/* Line Styles */
+.line {
+    fill: none;
+    stroke-width: 2px;
+    opacity: 0.8;
+    transition: stroke-width 0.2s, opacity 0.2s;
+    cursor: pointer;
+}
+
+/* Axis Labels */
+.axis-label {
+    font-size: 14px;
+    fill: #555;
+}
+
+/* Tooltip Styling */
+.tooltip {
+    position: absolute;
+    background-color: rgba(0, 0, 0, 0.8);
+    color: #fff;
+    padding: 8px 12px;
+    border-radius: 4px;
+    font-size: 13px;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.3s;
+}
+
+
+/* Grid Lines */
+.grid line {
+    stroke: #ccc;
+    stroke-opacity: 0.7;
+    shape-rendering: crispEdges;
+}
+
+.grid path {
+    stroke-width: 0;
+}
+
+/* Legend */
+.legend {
+    font-size: 12px;
+    cursor: default;
+}
+
+.legend rect {
+    rx: 2px;
+    ry: 2px;
+}

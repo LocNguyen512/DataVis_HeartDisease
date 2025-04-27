@@ -28,3 +28,13 @@ h1 {
     visibility: hidden;
     pointer-events: none;
 }
+
+.grid line {
+    stroke: #ccc;
+    stroke-opacity: 0.7;
+    shape-rendering: crispEdges;
+  }
+
+  .grid path {
+    stroke-width: 0;
+  }
