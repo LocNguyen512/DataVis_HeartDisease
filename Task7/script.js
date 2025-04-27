@@ -1,9 +1,9 @@
 d3.csv("project_heart_disease.csv").then(function (data) {
     console.log("Dữ liệu CSV:", data);
-    
+
     // Lọc dữ liệu, loại bỏ những dòng có "Family Heart Disease" trống
     data = data.filter(d => d["Family Heart Disease"] !== "");
-    
+
     // Nhóm dữ liệu theo Family History
     let groupedData = d3.rollups(
         data,
@@ -55,7 +55,7 @@ d3.csv("project_heart_disease.csv").then(function (data) {
         .attr("class", "grid")
         .attr("transform", `translate(${margin.left},0)`)
         .call(d3.axisLeft(yScale)
-            .tickSize(-width + 300 )
+            .tickSize(-width + 300)
             .tickFormat("")
         )
         .selectAll(".tick line")  // Chọn các đường kẻ (line) của trục Y
@@ -91,7 +91,7 @@ d3.csv("project_heart_disease.csv").then(function (data) {
                             <strong> Count:</strong> ${d[key]}<br>
                             <strong> Percentage: </strong> ${((d[key] / d.Total) * 100).toFixed(1)}%<br>
                             <strong>Total in group:</strong> ${d.Total}`);
-                    
+
                     d3.select(this).style("opacity", 0.7);
                 })
                 .on("mousemove", function (event) {
@@ -155,7 +155,7 @@ d3.csv("project_heart_disease.csv").then(function (data) {
                 .style("font-size", "16px")
                 .style("font-weight", "bold")
                 .text(`${((d[key] / d.Total) * 100).toFixed(1)}%`);
-            
+
             yStart -= barHeight;
         });
     });
@@ -167,12 +167,12 @@ d3.csv("project_heart_disease.csv").then(function (data) {
     // Thêm nền cho Legend (như trong phần trước)
     legendContainer.append("rect")
         .attr("width", 210)
-        .attr("height", 110) 
+        .attr("height", 110)
         .attr("fill", "#ffffff")
         .attr("stroke", "#999")
         .attr("stroke-width", 1.5)
         .attr("rx", 12)
-        .attr("ry", 12) 
+        .attr("ry", 12)
         .attr("x", -10)
         .attr("y", -10);
 
@@ -206,7 +206,7 @@ d3.csv("project_heart_disease.csv").then(function (data) {
         .text(d => `Heart Disease: ${d}`)
         .style("font-weight", "bold")
         .style("font-size", "12px"); // Cỡ chữ nhỏ hơn
-    
+
     // Thêm tiêu đề cho biểu đồ
     svg.append("text")
         .attr("x", width / 2)
@@ -215,6 +215,6 @@ d3.csv("project_heart_disease.csv").then(function (data) {
         .style("font-size", "20px")
         .style("font-weight", "bold")
         .text("Distribution of Heart Disease by Family History");
-}).catch(function(error) {
+}).catch(function (error) {
     console.error("Lỗi khi tải CSV:", error);
 });

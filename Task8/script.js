@@ -80,7 +80,7 @@ d3.csv("project_heart_disease.csv").then(function (data) {
         .style("font-weight", "bold")
         .call(d3.axisLeft(yScale));
 
-    
+
     // Thêm gridlines cho trục Y
     svg.append("g")
         .attr("class", "grid")
@@ -108,7 +108,7 @@ d3.csv("project_heart_disease.csv").then(function (data) {
         .style("font-size", "14px")
         .style("font-weight", "bold")
         .text("Number of people");
-    
+
     // Thêm các cột vào biểu đồ
     svg.append("g")
         .selectAll("g")
@@ -143,7 +143,7 @@ d3.csv("project_heart_disease.csv").then(function (data) {
         })
         .on("mousemove", function (event) {
             const tooltipWidth = tooltip.node().getBoundingClientRect().width;
-            const xPosition = (event.pageX + 10 + tooltipWidth > window.innerWidth) ? 
+            const xPosition = (event.pageX + 10 + tooltipWidth > window.innerWidth) ?
                 (event.pageX - tooltipWidth - 10) : (event.pageX + 10);
 
             tooltip.style("left", xPosition + "px")
@@ -181,7 +181,7 @@ d3.csv("project_heart_disease.csv").then(function (data) {
     svg.append("g")
         .selectAll("g")
         .data(stackedData)
-        .enter().append("g")    
+        .enter().append("g")
         .attr("fill", d => color(d.key))
         .selectAll("text")
         .data(d => d)
@@ -198,7 +198,7 @@ d3.csv("project_heart_disease.csv").then(function (data) {
             const count = d[1] - d[0];
             const percentage = ((count / total) * 100).toFixed(1);
             return `${percentage}%`;
-    });
+        });
 
     // Tạo legend cho các categories
     const legend = svg.append("g")
@@ -213,10 +213,10 @@ d3.csv("project_heart_disease.csv").then(function (data) {
     categories.forEach((cat, i) => {
         // Bọc Legend trong một nhóm có nền
         const legendContainer = svg.append("g")
-            .attr("transform", `translate(${width-5}, 50)`); // Điều chỉnh vị trí Legend
+            .attr("transform", `translate(${width - 5}, 50)`); // Điều chỉnh vị trí Legend
 
         legendContainer.append("rect")
-            .attr("width",210) // Tăng chiều rộng để tạo padding
+            .attr("width", 210) // Tăng chiều rộng để tạo padding
             .attr("height", categories.length * 30 + 40) // Tăng chiều cao để có khoảng cách trên dưới
             .attr("fill", "#ffffff") // Màu nền nhẹ hơn
             .attr("stroke", "#999") // Viền rõ hơn một chút

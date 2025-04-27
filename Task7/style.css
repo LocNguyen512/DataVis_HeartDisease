@@ -14,13 +14,13 @@ h2 {
     align-items: center;
     text-align: center;
     flex-direction: column;
-    background-color: rgb(255, 255, 255) ;
+    background-color: rgb(255, 255, 255);
     width: max-content;
     height: max-content;
     padding: 10px;
     margin-left: 25%;
     border-radius: 20px;
-    
+
 }
 
 .bar {
@@ -28,28 +28,27 @@ h2 {
     cursor: pointer;
     transition: fill 0.3s;
 }
+
 .bar:hover {
     opacity: 0.7;
 }
+
 .selected {
     stroke: black;
     stroke-width: 3px;
 }
+
 .tooltip {
     position: absolute;
-    background-color: rgba(255, 255, 255, 0.9); /* Màu nền trắng với độ trong suốt nhẹ */
-    padding: 12px;
-    border-radius: 8px;
-    visibility: hidden;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15); /* Bóng đổ mềm mại, độ mờ cao hơn */
-    font-size: 14px;
-    color: #333;
-    font-family: 'Arial', sans-serif;
-    font-weight: 400;
-    border: 1px solid #ddd;
-    z-index: 1000;
+    display: none;
+    padding: 8px;
+    background: rgba(0, 0, 0, 0.7);
+    color: white;
+    border-radius: 5px;
+    font-size: 12px;
+    pointer-events: none;
 }
-  
+
 .axis text {
     font-size: 16px;
     font-weight: bold;
@@ -57,8 +56,10 @@ h2 {
 
 .container {
     display: flex;
-    flex-direction: column; /* Sắp xếp theo chiều dọc */
-    align-items: center; /* Căn giữa theo chiều ngang */
+    flex-direction: column;
+    /* Sắp xếp theo chiều dọc */
+    align-items: center;
+    /* Căn giữa theo chiều ngang */
 }
 
 .details-box {
@@ -69,7 +70,8 @@ h2 {
     border: 1px solid #ccc;
     background-color: #dfdfdf;
     font-size: 16px;
-    margin-top: 100px; /* Đẩy xuống dưới */
+    margin-top: 100px;
+    /* Đẩy xuống dưới */
 }
 
 #details {
@@ -80,7 +82,7 @@ h2 {
     border-radius: 12px;
     border: 1px solid #ddd;
     background: linear-gradient(to bottom, #ffffff, #f9f9f9);
-    box-shadow: 3px 5px 12px rgba(0, 0, 0, 0.1); 
+    box-shadow: 3px 5px 12px rgba(0, 0, 0, 0.1);
     font-family: Arial, sans-serif;
     transition: all 0.3s ease-in-out;
 }

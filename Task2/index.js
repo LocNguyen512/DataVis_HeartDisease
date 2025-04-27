@@ -21,12 +21,12 @@ d3.csv("project_heart_disease.csv").then(data => {
       total: 100 // luôn là 100%
     };
   });
-  
+
 
   const svg = d3.select("#chartGender"),
-        margin = {top: 40, right: 200, bottom: 70, left: 150},
-        width = 750,
-        height = 400;
+    margin = { top: 40, right: 200, bottom: 70, left: 150 },
+    width = 750,
+    height = 400;
 
   const y = d3.scaleBand()
     .domain(processedData.map(d => d.group))
@@ -34,9 +34,9 @@ d3.csv("project_heart_disease.csv").then(data => {
     .padding(0.2);
 
   const x = d3.scaleLinear()
-  .domain([0, 100])
-  .range([margin.left, margin.left + width]);
-  
+    .domain([0, 100])
+    .range([margin.left, margin.left + width]);
+
 
   const color = d3.scaleOrdinal()
     .domain(["Yes", "No"])
@@ -77,7 +77,7 @@ d3.csv("project_heart_disease.csv").then(data => {
     .attr("width", d => x(d[1]) - x(d[0]))
     .attr("height", y.bandwidth())
     .attr("class", "bar")
-    .on("mouseover", function(event, d) {
+    .on("mouseover", function (event, d) {
       const key = this.parentNode.__data__.key;
       const count = d[1] - d[0];
       const total = d.data.total;
@@ -96,11 +96,11 @@ d3.csv("project_heart_disease.csv").then(data => {
 
       d3.select(this).attr("opacity", 0.8);
     })
-    .on("mousemove", function(event) {
+    .on("mousemove", function (event) {
       tooltip.style("left", (event.pageX + 10) + "px")
-             .style("top", (event.pageY - 40) + "px");
+        .style("top", (event.pageY - 40) + "px");
     })
-    .on("mouseout", function() {
+    .on("mouseout", function () {
       tooltip.style("opacity", 0);
       d3.select(this).attr("opacity", 1)
         .style("transition", "opacity 0.3s ease");
