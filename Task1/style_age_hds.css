@@ -5,6 +5,7 @@ body {
   display: flex;
   flex-direction: column;
   align-items: center;
+  position: relative;
 }
 
 .chart-title {
@@ -62,4 +63,33 @@ body {
 
 .grid path {
   stroke-width: 0;
+}
+
+/* Nút Trở về Home */
+.home-button {
+  position: absolute;
+  /* Đặt vị trí tuyệt đối */
+  top: 20px;
+  /* Cách mép trên 20px */
+  left: 20px;
+  /* Cách mép trái 20px */
+  padding: 10px 20px;
+  font-size: 16px;
+  background-color: #287da7;
+  /* Màu nền xanh */
+  color: white;
+  border: none;
+  border-radius: 5px;
+  text-decoration: none;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  /* Đổ bóng nhẹ */
+  transition: background-color 0.3s, box-shadow 0.3s;
+  /* Hiệu ứng chuyển màu và bóng */
+}
+
+.home-button:hover {
+  background-color: #214088;
+  /* Màu nền khi hover */
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2);
+  /* Đổ bóng khi hover */
 }

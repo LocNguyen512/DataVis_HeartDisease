@@ -1,51 +1,81 @@
 body {
-    font-family: "Segoe UI", Roboto, sans-serif;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: flex-start;
-    min-height: 100vh;
-    margin: 0;
-    background: #eaeaea;
-  }
+  font-family: "Segoe UI", Roboto, sans-serif;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  min-height: 100vh;
+  margin: 0;
+  background: #eaeaea;
+  position: relative;
+}
 
-  .chart-title {
-    text-align: center;
-    font-size: 30px;
-    font-weight: bold;
-    margin-top: 40px;
-    margin-bottom: 40px;
-    color: #333;
-  }
+.chart-title {
+  text-align: center;
+  font-size: 30px;
+  font-weight: bold;
+  margin-top: 40px;
+  margin-bottom: 40px;
+  color: #333;
+}
 
-  .chart-subtitle {
-    text-align: center;
-    font-size: 16px;
-    font-weight: normal;
-    color: #666;
-    margin-top: -10px;
-    margin-bottom: 20px;
-  }
+.chart-subtitle {
+  text-align: center;
+  font-size: 16px;
+  font-weight: normal;
+  color: #666;
+  margin-top: -10px;
+  margin-bottom: 20px;
+}
 
-  .chart-container {
-    display: inline-block;
-    padding: 20px 30px;
-    border: 1px solid #ccc;
-    border-radius: 10px;
-    background-color: #fafafa;
-    box-shadow: 0 0 10px rgba(0, 0, 0, 0.05);
-    width: fit-content;
-  }
+.chart-container {
+  display: inline-block;
+  padding: 20px 30px;
+  border: 1px solid #ccc;
+  border-radius: 10px;
+  background-color: #fafafa;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.05);
+  width: fit-content;
+}
 
-  .tooltip {
-    position: absolute;
-    text-align: center;
-    padding: 6px;
-    font-size: 16px;
-    background: white;
-    border: 1px solid #ccc;
-    border-radius: 4px;
-    pointer-events: none;
-    opacity: 0;
-    box-shadow: 0 2px 6px rgba(0,0,0,0.1);
-  }
+.tooltip {
+  position: absolute;
+  text-align: center;
+  padding: 6px;
+  font-size: 16px;
+  background: white;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  pointer-events: none;
+  opacity: 0;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+}
+
+/* Nút Trở về Home */
+.home-button {
+  position: absolute;
+  /* Đặt vị trí tuyệt đối */
+  top: 20px;
+  /* Cách mép trên 20px */
+  left: 20px;
+  /* Cách mép trái 20px */
+  padding: 10px 20px;
+  font-size: 16px;
+  background-color: #287da7;
+  /* Màu nền xanh */
+  color: white;
+  border: none;
+  border-radius: 5px;
+  text-decoration: none;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  /* Đổ bóng nhẹ */
+  transition: background-color 0.3s, box-shadow 0.3s;
+  /* Hiệu ứng chuyển màu và bóng */
+}
+
+.home-button:hover {
+  background-color: #214088;
+  /* Màu nền khi hover */
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2);
+  /* Đổ bóng khi hover */
+}
