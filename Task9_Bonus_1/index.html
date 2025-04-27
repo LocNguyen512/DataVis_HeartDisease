@@ -42,11 +42,11 @@
             fill: #555;
         }
 
-        /* Tooltip Styling - ONLY KEEP THIS */
+        /* Tooltip Styling */
         .tooltip {
             position: absolute;
-            background-color: rgba(0, 0, 0, 0.8); /* dark background */
-            color: #fff; /* white text */
+            background-color: rgba(0, 0, 0, 0.8);
+            color: #fff;
             padding: 8px 12px;
             border-radius: 4px;
             font-size: 13px;
@@ -80,7 +80,7 @@
     </style>
 </head>
 <body>
-    <h2>Heart Disease Risk vs Unhealthy Lifestyle Score (by Age Group)</h2>
+    <h2>Heart Disease Risk vs Healthy Lifestyle Score (by Age Group)</h2>
     <svg width="800" height="500"></svg>
 
     <script>
@@ -95,33 +95,32 @@
         .attr("class", "tooltip");
 
     d3.csv("pivot_heart_disease_risk.csv").then(data => {
-        // Convert numeric values
+        // Convert numeric values for the Healthy Lifestyle Score and age group columns
         data.forEach(d => {
-            d['Unhealthy Lifestyle Score'] = +d['Unhealthy Lifestyle Score'];
-            d['<30'] = +d['<30'];
-            d['30-45'] = +d['30-45'];
-            d['45-60'] = +d['45-60'];
-            d['60+'] = +d['60+'];
+            d['Healthy Lifestyle Score'] = +d['Healthy Lifestyle Score'];
+            d['<35'] = +d['<35'];
+            d['36-55'] = +d['36-55'];
+            d['55+'] = +d['55+'];
         });
 
-        const ageGroups = ["<30", "30-45", "45-60", "60+"];
+        const ageGroups = ["<35", "36-55", "55+"];
 
         // Scales
         const x = d3.scaleLinear()
-            .domain(d3.extent(data, d => d['Unhealthy Lifestyle Score']))
+            .domain(d3.extent(data, d => d['Healthy Lifestyle Score']))
             .range([0, width]);
 
         const y = d3.scaleLinear()
-            .domain([15, d3.max(data, d => Math.max(d['<30'], d['30-45'], d['45-60'], d['60+']))])
+            .domain([15, d3.max(data, d => Math.max(d['<35'], d['36-55'], d['55+']))])
             .range([height, 0]);
 
         const color = d3.scaleOrdinal()
             .domain(ageGroups)
-            .range(["#1f77b4", "#ff7f0e", "#2ca02c", "#d62728"]);
+            .range(["#1f77b4", "#ff7f0e", "#2ca02c"]);
 
         // Line generator
         const line = ageGroup => d3.line()
-            .x(d => x(d['Unhealthy Lifestyle Score']))
+            .x(d => x(d['Healthy Lifestyle Score']))
             .y(d => y(d[ageGroup]));
 
         // Draw lines
@@ -140,7 +139,7 @@
                 .data(data)
                 .enter()
                 .append("circle")
-                .attr("cx", d => x(d['Unhealthy Lifestyle Score']))
+                .attr("cx", d => x(d['Healthy Lifestyle Score']))
                 .attr("cy", d => y(d[ageGroup]))
                 .attr("r", 4)
                 .attr("fill", color(ageGroup))
@@ -149,7 +148,7 @@
                     tooltip.transition().duration(200).style("opacity", 1);
                     tooltip.html(`
                         <strong>Age Group:</strong> ${ageGroup}<br/>
-                        <strong>Unhealthy Score:</strong> ${d['Unhealthy Lifestyle Score']}<br/>
+                        <strong>Healthy Score:</strong> ${d['Healthy Lifestyle Score']}<br/>
                         <strong>Risk (%):</strong> ${d[ageGroup].toFixed(3)}%
                     `)
                     .style("left", (event.pageX + 10) + "px")
@@ -168,13 +167,13 @@
         // X Axis
         g.append("g")
             .attr("transform", `translate(0,${height})`)
-            .call(d3.axisBottom(x).ticks(4))
+            .call(d3.axisBottom(x).ticks(6))
             .append("text")
             .attr("class", "axis-label")
             .attr("x", width / 2)
             .attr("y", 40)
             .attr("fill", "black")
-            .text("Unhealthy Lifestyle Score");
+            .text("Healthy Lifestyle Score");
 
         // Y Axis
         g.append("g")
