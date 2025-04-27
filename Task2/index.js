@@ -16,11 +16,12 @@ d3.csv("project_heart_disease.csv").then(data => {
     const total = value ? value.Yes + value.No : 1;
     return {
       group: key,
-      Yes: value ? value.Yes : 0,
-      No: value ? value.No : 0,
-      total: total
+      Yes: value ? (value.Yes / total) * 100 : 0,
+      No: value ? (value.No / total) * 100 : 0,
+      total: 100 // luôn là 100%
     };
   });
+  
 
   const svg = d3.select("#chartGender"),
         margin = {top: 40, right: 200, bottom: 70, left: 150},
@@ -33,8 +34,9 @@ d3.csv("project_heart_disease.csv").then(data => {
     .padding(0.2);
 
   const x = d3.scaleLinear()
-    .domain([0, d3.max(processedData, d => d.total)])
-    .range([margin.left, margin.left + width]);
+  .domain([0, 100])
+  .range([margin.left, margin.left + width]);
+  
 
   const color = d3.scaleOrdinal()
     .domain(["Yes", "No"])
