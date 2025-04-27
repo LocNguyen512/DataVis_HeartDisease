@@ -23,18 +23,18 @@ d3.csv("project_heart_disease.csv").then(data => {
   });
 
   const svg = d3.select("#chartGender"),
-        margin = {top: 40, right: 200, bottom: 70, left: 80},
-        width = 800,
+        margin = {top: 40, right: 200, bottom: 70, left: 150},
+        width = 750,
         height = 400;
 
-  const x = d3.scaleBand()
+  const y = d3.scaleBand()
     .domain(processedData.map(d => d.group))
-    .range([margin.left, margin.left + width])
+    .range([margin.top, margin.top + height])
     .padding(0.2);
 
-    const y = d3.scaleLinear()
+  const x = d3.scaleLinear()
     .domain([0, d3.max(processedData, d => d.total)])
-    .range([margin.top + height, margin.top]);
+    .range([margin.left, margin.left + width]);
 
   const color = d3.scaleOrdinal()
     .domain(["Yes", "No"])
@@ -44,14 +44,14 @@ d3.csv("project_heart_disease.csv").then(data => {
 
   const tooltip = d3.select("#tooltip");
 
-  // 🔹 Gridline phía sau
+  // 🔹 Gridline
   svg.append("g")
     .attr("class", "grid")
-    .attr("transform", `translate(${margin.left},0)`)
+    .attr("transform", `translate(0,${margin.top})`)
     .call(
-      d3.axisLeft(y)
+      d3.axisTop(x)
         .ticks(5)
-        .tickSize(-width)
+        .tickSize(-height)
         .tickFormat("")
     )
     .selectAll("line")
@@ -60,7 +60,7 @@ d3.csv("project_heart_disease.csv").then(data => {
     .attr("stroke-width", 1.2)
     .attr("stroke-dasharray", "2,2");
 
-  // 🔹 Vẽ bar chart
+  // 🔹 Vẽ stacked horizontal bar chart
   const bars = svg.append("g")
     .selectAll("g")
     .data(stackedData)
@@ -70,17 +70,17 @@ d3.csv("project_heart_disease.csv").then(data => {
   bars.selectAll("rect")
     .data(d => d)
     .join("rect")
-    .attr("x", d => x(d.data.group))
-    .attr("y", d => y(d[1]))
-    .attr("height", d => y(d[0]) - y(d[1]))
-    .attr("width", x.bandwidth())
+    .attr("y", d => y(d.data.group))
+    .attr("x", d => x(d[0]))
+    .attr("width", d => x(d[1]) - x(d[0]))
+    .attr("height", y.bandwidth())
     .attr("class", "bar")
     .on("mouseover", function(event, d) {
       const key = this.parentNode.__data__.key;
-      const count = d[1] - d[0]; // ✅ dùng trực tiếp giá trị count
+      const count = d[1] - d[0];
       const total = d.data.total;
       const percent = (count / total) * 100;
-    
+
       tooltip.style("opacity", 1)
         .html(`
           <strong>Gender:</strong> ${d.data.group}<br/>
@@ -91,7 +91,7 @@ d3.csv("project_heart_disease.csv").then(data => {
         `)
         .style("left", (event.pageX + 10) + "px")
         .style("top", (event.pageY - 40) + "px");
-    
+
       d3.select(this).attr("opacity", 0.8);
     })
     .on("mousemove", function(event) {
@@ -104,54 +104,55 @@ d3.csv("project_heart_disease.csv").then(data => {
         .style("transition", "opacity 0.3s ease");
     });
 
-  // 🔹 Nhãn hiển thị số lượng (Count)
+  // 🔹 Thêm % label giữa bar
   bars.selectAll("text")
     .data(d => d)
     .join("text")
-    .attr("x", d => x(d.data.group) + x.bandwidth() / 2)
-    .attr("y", d => (y(d[1]) + y(d[0])) / 2)
+    .attr("y", d => y(d.data.group) + y.bandwidth() / 2)
+    .attr("x", d => (x(d[0]) + x(d[1])) / 2)
     .text(d => {
       const count = d[1] - d[0];
       const percent = (count / d.data.total) * 100;
       return `${percent.toFixed(1)}%`;
     })
     .attr("text-anchor", "middle")
+    .attr("dominant-baseline", "middle")
     .attr("fill", "white")
-    .style("font-size", "18px")
-    .style("pointer-events", "none"); // để không bị hover chồng
+    .style("font-size", "16px")
+    .style("pointer-events", "none");
+
+  // 🔹 Trục Y (Gender)
+  svg.append("g")
+    .attr("transform", `translate(${margin.left},0)`)
+    .call(d3.axisLeft(y).tickSizeOuter(0))
+    .selectAll("text")
+    .style("font-size", "15px");
 
   // 🔹 Trục X
   svg.append("g")
     .attr("transform", `translate(0,${margin.top + height})`)
-    .call(d3.axisBottom(x).tickSizeOuter(0))
+    .call(d3.axisBottom(x).ticks(5).tickFormat(d => d))
     .selectAll("text")
     .style("font-size", "15px");
 
-  // 🔹 Trục Y
-  svg.append("g")
-    .attr("transform", `translate(${margin.left},0)`)
-    .call(d3.axisLeft(y).ticks(5).tickFormat(d => d))
-    .selectAll("text")
-    .style("font-size", "15px");
-
-  // 🔹 Nhãn trục
+  // 🔹 Label trục
   svg.append("text")
     .attr("x", margin.left + width / 2)
     .attr("y", margin.top + height + 40)
     .style("text-anchor", "middle")
     .style("font-size", "20px")
     .style("font-weight", "bold")
-    .text("Gender");
+    .text("Number of People");
 
   svg.append("text")
     .attr("transform", "rotate(-90)")
-    .attr("y", margin.left - 70)
-    .attr("x", -(margin.top + height / 2))
+    .attr("x", -margin.top - height / 2)
+    .attr("y", margin.left - 100)
     .attr("dy", "1em")
     .style("text-anchor", "middle")
     .style("font-size", "20px")
     .style("font-weight", "bold")
-    .text("Number of People");
+    .text("Gender");
 
   // 🔹 Legend
   const legend = svg.append("g")
